@@ -18,6 +18,7 @@
 #include "esp_sleep.h"
 #include "sdkconfig.h"
 #include <math.h>
+#include "report.h"
 /*  APID  */
 #include "../include/crono.h"
 #include "../include/io.h"
@@ -41,7 +42,13 @@ static void CRONO_timerCallback(void *arg) {
     if (n < SAMPLES_SIZE) {
         samples[n] = IO_readAdc();
         IO_monitorStem(samples[n]);
+        static char str[20];
+        sprintf(str, "%d", samples[n] * 100 / 4096);
+        MQTT_publish("marcos_practica2/measurement", str);
         n++;
+    }
+    else {
+        REPORT_MEASUREMENTReportEnable(DISABLE_MEASUREMENT_MEASUREMENT);
     }
 }
 

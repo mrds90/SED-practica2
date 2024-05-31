@@ -6,10 +6,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "esp_log.h"
 #include "sdkconfig.h"
 #include "mqtt_client.h"
-
+#include "report.h"
 /* APID */
 #include "../config.h"
 #include "../include/wifi.h"
@@ -61,16 +62,55 @@ void MQTT_publish(const char * topic, const char * mensaje) {
 /*******************************************************************************
  MQTT_processTopic(): lee el mensaje MQTT recibido cuando se dispara el evento
  ******************************************************************************/
- void MQTT_processTopic(const char * topic, const char * data){
+bool is_number(const char *str) {
+    bool decimal_point = false;
+    if (*str == '-' || *str == '+') str++; // opcional manejo de signo
+    if (!*str) return false; // string vacío después de signo
+    while (*str) {
+        if (*str == '.') {
+            if (decimal_point) return false; // más de un punto decimal
+            decimal_point = true;
+        } else if (!isdigit((unsigned char)*str)) {
+            return false;
+        }
+        str++;
+    }
+    return true;
+}
 
-   /* Acciones a ejecutar para cada topic recibido */
-
-   // Ingresar código aquí
-    if(strcmp("practica1/led", topic)==0) {
-      printf("MQTT: Mensaje recibido: %s\n", data);
-      IO_toggleLed();
+float data_to_int(const char *data) {
+    if (!is_number(data)) {
+        printf("Error: data no es un número válido.\n");
+        return -1.0; // Valor indicador de error
     }
 
+    float value = atof(data);
+    if (value < 0.0 || value > 4096.0) {
+        printf("Error: data fuera del rango permitido (0 a 4096.0).\n");
+        return -1.0; // Valor indicador de error
+    }
+
+    return value;
+}
+
+ void MQTT_processTopic(const char * topic, const char * data) {
+    
+
+    if(strcmp("marcos_practica2/led_bright", topic)==0) {
+        
+        float data_number = data_to_int(data);
+        IO_pwmSet(data_number);
+    
+    }
+
+    if (strcmp("marcos_practica2/enable_measurement", topic) == 0) {
+        if (strcmp("On", data) == 0) {
+            REPORT_MEASUREMENTReportEnable(ENABLE_MEASUREMENT_MEASUREMENT);
+        }
+        else {
+            REPORT_MEASUREMENTReportEnable(DISABLE_MEASUREMENT_MEASUREMENT);
+        }
+    }
  }
 
 

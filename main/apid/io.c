@@ -33,7 +33,7 @@ static const adc_bits_width_t width = ADC_WIDTH_BIT_13;
 #endif
 static const adc_atten_t atten = ADC_ATTEN_DB_11;//ADC_ATTEN_DB_0;
 static const adc_unit_t unit = ADC_UNIT_1;
-
+static int estado = 0;
 
 /*******************************************************************************
  IO_adcInit(): Inicialización del conversor analógico digital
@@ -134,9 +134,10 @@ void IO_gpioInit(){
 /******************************************************************************
  IO_setLed(): Setea el estado del LED configurado por defecto en el módulo ESP32
 ******************************************************************************/
-int IO_setLed(int estado){
+int IO_setLed(int nuevo_estado){
 
-  gpio_set_level(BLINK_GPIO, estado);
+  gpio_set_level(BLINK_GPIO, nuevo_estado);
+  estado = nuevo_estado;
   return estado;
 
 }
@@ -144,14 +145,17 @@ int IO_setLed(int estado){
 /******************************************************************************
  IO_toggleLed(): Togglea estado del LED configurado por defecto en el módulo ESP32
 ******************************************************************************/
+
 void IO_toggleLed(void){
 
- static int estado = 0;
  estado = 1 - estado;
  gpio_set_level(BLINK_GPIO, estado);
 
 }
 
+int IO_getLed(void) {
+    return estado;
+}
 
 /********************************** MONITOR ************************************/
 #define MAX_LENGTH_GRAPH 80 // Nro de caracteres máximos para IO_monitorGraph()

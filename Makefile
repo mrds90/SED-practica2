@@ -3,6 +3,6 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := practica1
+PROJECT_NAME := practica2
 
 include $(IDF_PATH)/make/project.mk

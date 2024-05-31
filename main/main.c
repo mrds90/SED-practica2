@@ -1,7 +1,7 @@
 
 #include "config.h"
 #include "main.h"
-
+#include "report.h"
 const char *TAG = "MAIN";
 
 volatile int samples[SAMPLES_SIZE];
@@ -17,29 +17,30 @@ void app_main(void) {
     IO_gpioInit();
     IO_pwmInit();
     CRONO_timerInit();
+    WIFI_init();
+    MQTT_init();
 
-    CRONO_timerStart(20);
-    printf("GRABACIÓN INICIADA\n");
-    while (n < SAMPLES_SIZE) {
-        IO_toggleLed();
-        CRONO_delayMs(500);
-    }
-    CRONO_timerStop();
-    printf("GRABACIÓN FINALIZADA\n");
-    IO_monitorPause("Presione Enter para continuar...\n");
-    printf("REPRODUCCIÓN INICIADA\n");
-    for (n = 0; n < SAMPLES_SIZE; n++) {
-        IO_pwmSet(samples[n] / 4096.0 * 100);
-        IO_monitorStem(samples[n]);
-        CRONO_delayMs(20);
-    }
-    IO_pwmSet(0);
-    printf("REPRODUCCIÓN FINALIZADA\n");
     n = 0;
 
+    MQTT_subscribe("marcos_practica2/led_bright");
+    MQTT_subscribe("marcos_practica2/enable_measurement");
     while (1) {
-        IO_toggleLed();
-        IO_pwmSet(samples[n] / 4096.0 * 100);
-        CRONO_delayMs(250);
+        // IO_toggleLed();
+        if (REPORT_MEASUREMENTReportCheck() != 0) {
+            if (IO_getLed() == 0) {
+                IO_setLed(1);
+                MQTT_publish("marcos_practica2/led", "ON");
+                CRONO_timerStart(100);
+            }
+        }
+        else {
+            if (IO_getLed() != 0) {
+                CRONO_timerStop();
+                IO_setLed(0);
+                n = 0;
+                MQTT_publish("marcos_practica2/led", "OFF");
+            }
+        }
+        CRONO_delayMs(100);
     }
 }

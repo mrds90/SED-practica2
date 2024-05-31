@@ -2,6 +2,7 @@
     "idf.adapterTargetName": "esp32",
     "files.associations": {
         "main.h": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "report.h": "c"
     }
 }

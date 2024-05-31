@@ -25,7 +25,7 @@
 
 /* Configuración CRONO  */
 
-#define SAMPLES_SIZE 1000
+#define SAMPLES_SIZE 200
 
 
 #endif
